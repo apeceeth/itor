@@ -535,8 +535,14 @@
               <div style="font-size:12px;color:#5F7269;font-weight:700">CURRENT PRICE</div>
               <div style="display:flex;align-items:baseline;gap:12px;margin-top:8px"><span style="font-family:'Space Grotesk';font-size:38px;font-weight:700;font-variant-numeric:tabular-nums">{{ item.priceBig }}</span><span style="font-size:15px;color:#8FA69D">USDT0</span><span style="font-size:15px;color:#5F7269">{{ item.priceUsd }}</span></div>
               <div style="display:flex;gap:12px;margin-top:20px">
-                <button onclick="{{ item.buy }}" class="fs-primary" style="flex:1;height:52px;background:#39F5A6;color:#04120c;border:none;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer;transition:.15s">Buy now</button>
-                <button onclick="{{ item.offer }}" class="fs-ghost" style="flex:1;height:52px;background:transparent;border:1px solid rgba(57,245,166,.3);border-radius:14px;color:#EAF4EF;font-weight:700;font-size:16px;cursor:pointer;transition:.15s">Make offer</button>
+                <sc-if value="{{ item.isOwner }}" hint-placeholder-val="{{ false }}">
+                  <button onclick="{{ item.editPrice }}" class="fs-primary" style="flex:1;height:52px;background:#39F5A6;color:#04120c;border:none;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer;transition:.15s">Edit price</button>
+                  <button onclick="{{ item.cancelList }}" class="fs-ghost" style="flex:1;height:52px;background:transparent;border:1px solid rgba(255,59,71,.35);border-radius:14px;color:#FF8A93;font-weight:700;font-size:16px;cursor:pointer;transition:.15s">Cancel listing</button>
+                </sc-if>
+                <sc-if value="{{ item.notOwner }}" hint-placeholder-val="{{ true }}">
+                  <button onclick="{{ item.buy }}" class="fs-primary" style="flex:1;height:52px;background:#39F5A6;color:#04120c;border:none;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer;transition:.15s">Buy now</button>
+                  <button onclick="{{ item.offer }}" class="fs-ghost" style="flex:1;height:52px;background:transparent;border:1px solid rgba(57,245,166,.3);border-radius:14px;color:#EAF4EF;font-weight:700;font-size:16px;cursor:pointer;transition:.15s">Make offer</button>
+                </sc-if>
               </div>
             </div>
             </sc-if>
@@ -544,7 +550,12 @@
             <div style="padding:22px 24px">
               <div style="font-size:15px;font-weight:700;color:#8FA69D">Not listed for sale</div>
               <div style="font-size:12.5px;color:#5F7269;margin-top:4px">Last sale {{ item.lastSaleLabel }}</div>
-              <button onclick="{{ item.offer }}" class="fs-primary" style="width:100%;height:52px;margin-top:18px;background:#39F5A6;color:#04120c;border:none;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer;transition:.15s">Make offer</button>
+              <sc-if value="{{ item.isOwner }}" hint-placeholder-val="{{ false }}">
+                <button onclick="{{ item.listForSale }}" class="fs-primary" style="width:100%;height:52px;margin-top:18px;background:#39F5A6;color:#04120c;border:none;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer;transition:.15s">List for Sale</button>
+              </sc-if>
+              <sc-if value="{{ item.notOwner }}" hint-placeholder-val="{{ true }}">
+                <button onclick="{{ item.offer }}" class="fs-primary" style="width:100%;height:52px;margin-top:18px;background:#39F5A6;color:#04120c;border:none;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer;transition:.15s">Make offer</button>
+              </sc-if>
             </div>
             </sc-if>
             <div style="padding:13px 24px;border-top:1px solid rgba(57,245,166,.1);display:flex;align-items:center;justify-content:space-between;background:rgba(6,15,12,.4)">
@@ -1151,6 +1162,7 @@ class Component extends DCLogic {
       watch:[], settings:{offers:true,sales:true,drops:false,mints:true},
       addr:null, chainId:null, balance:null, wrongNetwork:false, connecting:null, walletErr:null,
       ownedTokens:null, ownedLoading:false, editProfile:false, profile:{name:'',bio:'',x:''},
+      activityEvents:null,
       toast:null
     };
     this.CHAIN_ID_HEX='0x3dc'; // 988
@@ -1161,12 +1173,14 @@ class Component extends DCLogic {
     this.IMG='https://raw.githubusercontent.com/FevoStable/fevostableimage/main/images/';
     this.RPCS=['https://stable-mainnet.g.alchemy.com/v2/alch_WV_rxIrdGNksgTX-pgohg','https://stable-mainnet.g.alchemy.com/v2/alch_TpQ756y73jjEJBTM8dt3e','https://stable-mainnet.g.alchemy.com/v2/alch_N5qjELiELs8NlCE7Md4bA'];
     this.SEL={supply:'0x18160ddd',max:'0x32cb6b0c',price:'0x6817c76c',menabled:'0xd1239730',maxtx:'0xde7fcb1d',owner:'0x6352211e',listings:'0xad4d2448',getListing:'0x88700d1c',fee:'0x465de68b',decimals:'0x313ce567',
-      mint:'0xa0712d68',setApprovalForAll:'0xa22cb465',isApprovedForAll:'0xe985e9c5',buyNFT:'0xa82ba76f',listNFT:'0xad05f1b4',makeOffer:'0x730ed93b',acceptOffer:'0x3bbb2806',cancelOffer:'0x058a56ac',cancelListing:'0xb2ddee06',approve:'0x095ea7b3',allowance:'0xdd62ed3e'};
+      mint:'0xa0712d68',setApprovalForAll:'0xa22cb465',isApprovedForAll:'0xe985e9c5',buyNFT:'0xa82ba76f',listNFT:'0xad05f1b4',makeOffer:'0x730ed93b',acceptOffer:'0x3bbb2806',cancelOffer:'0x058a56ac',cancelListing:'0xb2ddee06',approve:'0x095ea7b3',allowance:'0xdd62ed3e',updatePrice:'0xe57d6fb7'};
+    this.TRANSFER_TOPIC='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
     this.dec=6;
   }
   componentDidMount(){
     fetch('metadata/fevostable.tokens.json').then(r=>r.json()).then(m=>this.setState({meta:m})).catch(()=>{});
     this.loadChain();
+    this.loadActivity();
   }
   componentWillUnmount(){ if(this._tt)clearTimeout(this._tt); }
 
@@ -1348,7 +1362,16 @@ class Component extends DCLogic {
           toggle:()=>this.toggleTrait(fc.type,v.value)}))};
     });
 
-    const activity=[]; const globalActivity=[]; const collOffers=[];
+    const evs=st.activityEvents||[];
+    const explorerTx=(h)=>'https://explorer.stable.xyz/tx/'+h;
+    const mapEv=(e)=>({event:e.event,evColor:e.evColor,evIcon:e.evIcon,name:e.tokenId!=null?('FevoStable #'+e.tokenId):'—',
+      glow:(m&&e.tokenId!=null&&m.tokens[e.tokenId])?m.tokens[e.tokenId].g:'#39F5A6',
+      price:'—', parties:e.from+' → '+e.to, time:e.hash?this.short(e.hash):'—',
+      open:()=>{ if(e.hash) window.open(explorerTx(e.hash),'_blank','noopener'); }});
+    const activity=evs.map(mapEv);
+    const actMap={All:null,Sales:null,Listings:null,Offers:null,Transfers:'Transfer',Mints:'Mint'};
+    const globalActivity=evs.filter(e=>!actMap[st.actFilter]||e.event===actMap[st.actFilter]).map(mapEv);
+    const collOffers=[];
     const actFilters=['All','Sales','Listings','Offers','Transfers','Mints'].map(k=>({label:k,color:st.actFilter===k?'#04120c':'#C7D8D0',bg:st.actFilter===k?'#39F5A6':'transparent',select:()=>this.setState({actFilter:k})}));
 
     const tok=this.getToken(st.itemId);
@@ -1359,6 +1382,8 @@ class Component extends DCLogic {
       listed:!!tok.listed, notListed:!tok.listed,
       priceBig:this.fmtP(tok.price), priceUsd:'',
       lastSaleLabel:'—', owner:this.short(st.itemOwner),
+      isOwner: !!(st.addr&&st.itemOwner&&st.addr.toLowerCase()===st.itemOwner.toLowerCase()),
+      notOwner: !(st.addr&&st.itemOwner&&st.addr.toLowerCase()===st.itemOwner.toLowerCase()),
       bestOfferLabel:'No offers yet', hasHistory:false, hasOffers:false, noOffers:true, chartLine:'', chartArea:'',
       heartFill:isFav(tok.id)?'#FF3B47':'none', heartColor:isFav(tok.id)?'#FF3B47':'#8FA69D',
       favs:st.favs.length,
@@ -1366,7 +1391,8 @@ class Component extends DCLogic {
         filter:()=>{ this.setState({route:'collection',colTab:'items'}); this.toggleTrait(type,tok.traits[type],true); }})),
       offers:[],
       fav:()=>{ if(this.needWallet())return; this.setState(s=>({favs:isFav(tok.id)?s.favs.filter(x=>x!==tok.id):[...s.favs,tok.id]})); },
-      buy:()=>this.openBuy(tok.id), offer:()=>this.openOffer(tok.id)
+      buy:()=>this.openBuy(tok.id), offer:()=>this.openOffer(tok.id),
+      listForSale:()=>this.openList(tok.id), editPrice:()=>this.openEditPrice(tok.id), cancelList:()=>this.cancelListing(tok.id)
     };
 
     const profTabDef=[['collected','Collected'],['listed','Listed'],['offers','Offers'],['activity','Activity'],['favorited','Favorites'],['created','Created']];
@@ -1434,11 +1460,11 @@ class Component extends DCLogic {
 
     // ===== MODAL =====
     const md=st.modal, modalOpen=!!md, mWallet=md&&md.type==='wallet';
-    const txTypes=['buy','offer','list','cart','mint'], mTx=md&&txTypes.includes(md.type);
+    const txTypes=['buy','offer','list','editprice','cancel','cart','mint'], mTx=md&&txTypes.includes(md.type);
     const wStat=(key)=> st.connecting===key?'Connecting…':(this.walletAvailable(key)?'Detected':'Not installed');
     const wColor=(key)=> st.connecting===key?'#39F5A6':(this.walletAvailable(key)?'#39F5A6':'#5F7269');
     const step=st.txStep, mtok=md&&md.id?this.getToken(md.id):null;
-    const isList=md&&md.type==='list',isOffer=md&&md.type==='offer',isCart=md&&md.type==='cart',isBuy=md&&md.type==='buy',isMintM=md&&md.type==='mint';
+    const isList=md&&md.type==='list',isEdit=md&&md.type==='editprice',isOffer=md&&md.type==='offer',isCart=md&&md.type==='cart',isBuy=md&&md.type==='buy',isMintM=md&&md.type==='mint';
     const feeR=(v)=>v*(feePct!=null?feePct/100:0.02), royR=(v)=>v*0.05;
     let txBreakdown=[],txConfirmLabel='Confirm',txGasFree=false,txHasItem=!!mtok,txItemName=mtok?mtok.name:'',txGlow=mtok?mtok.glow:'#39F5A6',txActionWord='Confirm',txNeedsApprove=false;
     if(isBuy&&mtok){ const p=mtok.price||floor||0;
@@ -1451,12 +1477,12 @@ class Component extends DCLogic {
       txBreakdown=[{label:'Offer amount',value:this.fmtP(a)+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'},
         {label:'If accepted, royalty (5%)',value:this.fmtP(royR(a))+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'}];
       txConfirmLabel='Submit offer'; txActionWord='Offer'; txNeedsApprove=st.needsApprove;
-    } else if(isList){ const p=+st.listPrice||0;
-      txBreakdown=[{label:'Listing price',value:this.fmtP(p)+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'},
+    } else if(isList||isEdit){ const p=+st.listPrice||0;
+      txBreakdown=[{label:isEdit?'New price':'Listing price',value:this.fmtP(p)+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'},
         {label:'Marketplace fee',value:'-'+this.fmtP(feeR(p))+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'},
         {label:'Creator royalty (5%)',value:'-'+this.fmtP(royR(p))+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'},
         {label:'You receive',value:this.fmtP(p-feeR(p)-royR(p))+' USDT0',labelColor:'#EAF4EF',weight:800,valColor:'#39F5A6'}];
-      txConfirmLabel='List item'; txActionWord='List'; txNeedsApprove=st.needsApprove;
+      txConfirmLabel=isEdit?'Update price':'List item'; txActionWord=isEdit?'Update':'List'; txNeedsApprove=isEdit?false:st.needsApprove;
     } else if(isCart){ const items=cartSet.map(id=>this.getToken(id)); const sub=items.reduce((a,x)=>a+(x.price||0),0);
       txBreakdown=[{label:'Subtotal ('+items.length+' items)',value:this.fmtP(sub)+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'},
         {label:'Fees + royalties',value:this.fmtP(feeR(sub)+royR(sub))+' USDT0',labelColor:'#8FA69D',weight:600,valColor:'#EAF4EF'},
@@ -1479,7 +1505,7 @@ class Component extends DCLogic {
     else if(isList){ txSuccessTitle='Your item is now listed!'; txSuccessSub='Listed for '+this.fmtP(+st.listPrice||0)+' USDT0.'; }
     else if(isCart){ txSuccessTitle='Purchase complete'; txSuccessSub=cartSet.length+' items added to your profile.'; }
     else if(isMintM){ txSuccessTitle='Minted '+st.mintQty+' guardian'+(st.mintQty>1?'s':'')+'!'; txSuccessSub='View them in your profile.'; }
-    const modalTitleMap={wallet:'Connect a wallet',buy:'Complete purchase',offer:'Make an offer',list:'List for sale',cart:'Checkout',mint:'Minting'};
+    const modalTitleMap={wallet:'Connect a wallet',buy:'Complete purchase',offer:'Make an offer',list:'List for sale',editprice:'Edit listing price',cancel:'Cancel listing',cart:'Checkout',mint:'Minting'};
 
     const sq=st.searchQ.trim().toLowerCase();
     const searchResults=this.tokenList().filter(it=>!sq||it.name.toLowerCase().includes(sq)||String(it.id)===sq).slice(0,7).map(it=>({name:it.name,rank:it.rank!=null?it.rank:'—',glow:it.glow,priceLabel:priceLabel(it.price),open:()=>{this.setState({searchOpen:false});this.openItem(it.id);}}));
@@ -1555,7 +1581,7 @@ class Component extends DCLogic {
       mTx, txReview:step==='review', txAwaiting:step==='awaiting', txPending:step==='pending', txSuccess:step==='success', txFailed:step==='failed',
       txHash:st.txHash, txHashShort:st.txHash?this.short(st.txHash):'', txErr:st.txErr||'Transaction failed.', txAwaitLabel:st.txAwaitLabel||'Confirm in your wallet',
       txHasItem, txItemName, txGlow, txBreakdown, txConfirmLabel, txGasFree, txActionWord,
-      txIsList:isList, txIsOffer:isOffer, txIsCart:isCart,
+      txIsList:isList||isEdit, txIsOffer:isOffer, txIsCart:isCart,
       txNeedsApprove, step1Border:'#39F5A6', step1Bg:approveDone?'rgba(57,245,166,.14)':'transparent', step1Color:'#39F5A6', step1Mark:approveDone?'✓':'',
       step2Border:approveDone?'#39F5A6':'rgba(57,245,166,.2)', step2Bg:'transparent', step2Color:approveDone?'#39F5A6':'#8FA69D',
       txAwaitingSub: st.txAwaitLabel?('Step: '+st.txAwaitLabel+' — approve in your wallet'):'Approve the request in your wallet',
@@ -1680,16 +1706,36 @@ class Component extends DCLogic {
       this.refreshAll();
     }catch(e){ this.setState({txStep:'failed',txErr:(e&&e.code===4001)?'Transaction rejected in wallet.':((e&&e.message)||'Transaction failed.')}); }
   }
-  refreshAll(){ this.loadChain(); if(this.state.addr) this.loadOwned(this.state.addr); }
+  refreshAll(){ this.loadChain(); this.loadActivity(); if(this.state.addr) this.loadOwned(this.state.addr); }
+  async loadActivity(){
+    try{
+      const latestHex=await this.rpc('eth_blockNumber',[]); const latest=BigInt(latestHex);
+      // NOTE: Alchemy free tier limits eth_getLogs to a 10-block range. Full history requires an
+      // indexer or paid RPC (see HANDOFF). We scan the most recent valid window for live events.
+      const from='0x'+(latest>9n?latest-9n:0n).toString(16);
+      const logs=await this.rpc('eth_getLogs',[{address:this.NFT,topics:[this.TRANSFER_TOPIC],fromBlock:from,toBlock:'latest'}]);
+      if(!Array.isArray(logs)){ this.setState({activityEvents:[]}); return; }
+      const evs=logs.slice(-40).reverse().map(l=>{
+        const fromA='0x'+String(l.topics[1]||'').slice(-40), toA='0x'+String(l.topics[2]||'').slice(-40);
+        const tokenId=l.topics[3]!=null?Number(BigInt(l.topics[3])):null;
+        const isMint=/^0x0+$/.test(fromA);
+        return {event:isMint?'Mint':'Transfer', evColor:isMint?'#FFC24B':'#B478FF', evIcon:isMint?'✦':'⇄',
+          from:this.short(fromA), to:this.short(toA), tokenId, hash:l.transactionHash, block:l.blockNumber };
+      });
+      this.setState({activityEvents:evs});
+    }catch(e){ this.setState({activityEvents:[]}); }
+  }
   async readAllowance(owner){ try{ const h=await this.ethCall(this.USDT,this.SEL.allowance+this.encAddr(owner)+this.encAddr(this.MKT)); return h?BigInt(h):0n; }catch(e){ return 0n; } }
   async readApprovedForAll(owner){ try{ const h=await this.ethCall(this.NFT,this.SEL.isApprovedForAll+this.encAddr(owner)+this.encAddr(this.MKT)); return h?BigInt(h)!==0n:false; }catch(e){ return false; } }
   disconnectWallet(){ this._provider=null; this.setState({wallet:false,addr:null,balance:null,chainId:null,wrongNetwork:false,accountMenu:false,route:'home'}); }
   openBuy(id){ if(this.needWallet())return; this.setState({modal:{type:'buy',id},txStep:'review',needsApprove:false}); }
   openOffer(id){ if(this.needWallet())return; this.setState({modal:{type:'offer',id},txStep:'review',offerAmount:'',needsApprove:true}); }
   openList(id){ if(this.needWallet())return; this.setState({modal:{type:'list',id},txStep:'review',listPrice:'',needsApprove:true}); }
+  openEditPrice(id){ if(this.needWallet())return; const t=this.getToken(id); this.setState({modal:{type:'editprice',id},txStep:'review',listPrice:t.price?String(t.price):''}); }
+  cancelListing(id){ if(this.needWallet())return; this.setState({modal:{type:'cancel',id}}); this.buildAndRun({type:'cancel',id}); }
   txConfirm(){ const md=this.state.modal; if(!md)return;
     if(md.type==='offer'&&!(+this.state.offerAmount>0)){ this.showToast('Enter an offer amount'); return; }
-    if(md.type==='list'&&!(+this.state.listPrice>0)){ this.showToast('Enter a listing price'); return; }
+    if((md.type==='list'||md.type==='editprice')&&!(+this.state.listPrice>0)){ this.showToast('Enter a price'); return; }
     this.buildAndRun(md);
   }
   durationSecs(){ return {'1d':86400,'3d':259200,'7d':604800,'30d':2592000}[this.state.listDur]||604800; }
@@ -1720,6 +1766,11 @@ class Component extends DCLogic {
         const approved=await this.readApprovedForAll(owner);
         if(!approved) steps.push({label:'Approve collection',to:this.NFT,data:this.SEL.setApprovalForAll+this.encAddr(this.MKT)+this.encUint(1)});
         steps.push({label:'List NFT',to:this.MKT,data:this.SEL.listNFT+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(price)});
+      } else if(md.type==='editprice'){
+        const price=this.toBase(this.state.listPrice);
+        steps.push({label:'Update price',to:this.MKT,data:this.SEL.updatePrice+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(price)});
+      } else if(md.type==='cancel'){
+        steps.push({label:'Cancel listing',to:this.MKT,data:this.SEL.cancelListing+this.encAddr(this.NFT)+this.encUint(md.id)});
       } else if(md.type==='mint'){
         const qty=this.state.mintQty; const mp=c.mintPrice;
         if(mp&&mp>0){ const cost=this.toBase(mp*qty); const allw=await this.readAllowance(owner); if(allw<cost) steps.push({label:'Approve USDT0',to:this.USDT,data:this.SEL.approve+this.encAddr(this.NFT)+this.encUint(cost)}); }
