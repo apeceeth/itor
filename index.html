@@ -41,6 +41,11 @@
   .fs-ghost:hover{border-color:rgba(57,245,166,.5);background:rgba(57,245,166,.06)}
   input,textarea{font-family:inherit}
   @media (max-width:1080px){ .fs-hdr-search{display:none !important} }
+  </style>
+<script src="config/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  @media (max-width:1080px){ .fs-hdr-search{display:none !important} }
   @media (max-width:940px){ .fs-hdr-nav{display:none !important} .fs-hdr-burger{display:grid !important} }
 </style>
 </helmet>
@@ -456,11 +461,11 @@
           <sc-if value="{{ noActivity }}" hint-placeholder-val="{{ true }}"><div style="padding:60px 20px;text-align:center;color:#5F7269;font-size:14px;font-weight:600">No activity yet.</div></sc-if>
           <sc-for list="{{ activity }}" as="a" hint-placeholder-count="10">
             <div class="fs-row" style="display:grid;grid-template-columns:1.4fr 1.6fr 1fr 1.2fr 1fr;padding:13px 20px;align-items:center;border-bottom:1px solid rgba(57,245,166,.06);transition:.12s">
-              <span style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:{{ a.evColor }}">{{ a.evIcon }} {{ a.event }}</span>
+              <span><span style="display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:{{ a.evColor }};border:1px solid {{ a.evColor }};padding:4px 10px;border-radius:8px">{{ a.evIcon }} {{ a.event }}</span></span>
               <span style="display:flex;align-items:center;gap:10px;font-size:13px"><span style="width:30px;height:30px;border-radius:8px;background:radial-gradient(120% 120% at 30% 25%,{{ a.glow }}55,transparent 60%),#0a1712"></span>{{ a.name }}</span>
-              <span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">{{ a.price }}</span>
-              <span style="font-size:12.5px;color:#8FA69D;font-variant-numeric:tabular-nums">{{ a.parties }}</span>
-              <span style="font-size:12.5px;color:#5F7269;text-align:right">{{ a.time }}</span>
+              <span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ a.priceColor }}">{{ a.price }}</span>
+              <span style="font-size:12.5px;color:#8FA69D;font-variant-numeric:tabular-nums"><span onclick="{{ a.openFrom }}" style="cursor:pointer">{{ a.fromLabel }}</span> → <span onclick="{{ a.openTo }}" style="cursor:pointer">{{ a.toLabel }}</span></span>
+              <span onclick="{{ a.open }}" style="font-size:12.5px;color:#39F5A6;text-align:right;cursor:pointer;font-variant-numeric:tabular-nums">{{ a.time }} ↗</span>
             </div>
           </sc-for>
         </div>
@@ -748,15 +753,16 @@
         </sc-for>
       </div>
       <div style="border:1px solid rgba(57,245,166,.12);border-radius:16px;overflow:hidden">
-        <div style="display:grid;grid-template-columns:1.3fr 1.8fr 1fr 1.3fr 1fr;padding:14px 20px;font-size:11px;font-weight:800;color:#5F7269;letter-spacing:.5px;border-bottom:1px solid rgba(57,245,166,.1);background:rgba(10,23,18,.5)"><span>EVENT</span><span>ITEM</span><span>PRICE</span><span>FROM → TO</span><span style="text-align:right">TIME</span></div>
+        <div style="display:grid;grid-template-columns:1.2fr 1.5fr 1fr .6fr 1.3fr 1fr;padding:14px 20px;font-size:11px;font-weight:800;color:#5F7269;letter-spacing:.5px;border-bottom:1px solid rgba(57,245,166,.1);background:rgba(10,23,18,.5)"><span>EVENT</span><span>NFT</span><span>PRICE</span><span>QTY</span><span>FROM → TO</span><span style="text-align:right">TRANSACTION</span></div>
         <sc-if value="{{ noGlobalActivity }}" hint-placeholder-val="{{ true }}"><div style="padding:70px 20px;text-align:center;color:#5F7269;font-size:15px;font-weight:600">No activity yet.</div></sc-if>
         <sc-for list="{{ globalActivity }}" as="a" hint-placeholder-count="12">
-          <div onclick="{{ a.open }}" class="fs-row" style="display:grid;grid-template-columns:1.3fr 1.8fr 1fr 1.3fr 1fr;padding:13px 20px;align-items:center;border-bottom:1px solid rgba(57,245,166,.06);cursor:pointer;transition:.12s">
-            <span style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:{{ a.evColor }}">{{ a.evIcon }} {{ a.event }}</span>
+          <div class="fs-row" style="display:grid;grid-template-columns:1.2fr 1.5fr 1fr .6fr 1.3fr 1fr;padding:13px 20px;align-items:center;border-bottom:1px solid rgba(57,245,166,.06);transition:.12s">
+            <span><span style="display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:{{ a.evColor }};border:1px solid {{ a.evColor }};padding:4px 10px;border-radius:8px">{{ a.evIcon }} {{ a.event }}</span></span>
             <span style="display:flex;align-items:center;gap:10px;font-size:13px"><span style="width:30px;height:30px;border-radius:8px;background:radial-gradient(120% 120% at 30% 25%,{{ a.glow }}55,transparent 60%),#0a1712"></span>{{ a.name }}</span>
-            <span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">{{ a.price }}</span>
-            <span style="font-size:12.5px;color:#8FA69D;font-variant-numeric:tabular-nums">{{ a.parties }}</span>
-            <span style="font-size:12.5px;color:#5F7269;text-align:right">{{ a.time }}</span>
+            <span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ a.priceColor }}">{{ a.price }}</span>
+            <span style="font-size:12.5px;color:#8FA69D;font-variant-numeric:tabular-nums">{{ a.qty }}</span>
+            <span style="font-size:12.5px;color:#8FA69D;font-variant-numeric:tabular-nums"><span onclick="{{ a.openFrom }}" style="cursor:pointer">{{ a.fromLabel }}</span> → <span onclick="{{ a.openTo }}" style="cursor:pointer">{{ a.toLabel }}</span></span>
+            <span onclick="{{ a.open }}" style="font-size:12.5px;color:#39F5A6;text-align:right;cursor:pointer;font-variant-numeric:tabular-nums">{{ a.time }} ↗</span>
           </div>
         </sc-for>
       </div>
@@ -1031,7 +1037,7 @@
             <div style="width:56px;height:56px;margin:0 auto 18px;border:3px solid rgba(44,224,224,.2);border-top-color:#2CE0E0;border-radius:50%;animation:fsSpin 1s linear infinite"></div>
             <div style="font-weight:700;font-size:16px">Transaction submitted</div>
             <div style="font-size:13px;color:#8FA69D;margin-top:6px">Waiting for confirmation on Stable Mainnet…</div>
-            <sc-if value="{{ txHash }}" hint-placeholder-val="{{ false }}"><a href="https://explorer.stable.xyz/tx/{{ txHash }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:14px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">{{ txHashShort }} · View on explorer ↗</a></sc-if>
+            <sc-if value="{{ txHash }}" hint-placeholder-val="{{ false }}"><a href="https://stablescan.xyz/tx/{{ txHash }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:14px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">{{ txHashShort }} · View on explorer ↗</a></sc-if>
           </div>
           </sc-if>
 
@@ -1043,7 +1049,7 @@
             <div style="font-size:13.5px;color:#8FA69D;margin-top:6px">{{ txSuccessSub }}</div>
             <div style="display:flex;gap:10px;margin-top:22px">
               <button onclick="{{ closeModal }}" class="fs-primary" style="flex:1;height:48px;background:#39F5A6;color:#04120c;border:none;border-radius:13px;font-weight:800;font-size:14.5px;cursor:pointer;transition:.15s">Done</button>
-              <sc-if value="{{ txHash }}" hint-placeholder-val="{{ false }}"><a href="https://explorer.stable.xyz/tx/{{ txHash }}" target="_blank" rel="noopener noreferrer" style="flex:1;height:48px;display:grid;place-items:center;border:1px solid rgba(57,245,166,.28);border-radius:13px;color:#EAF4EF;font-weight:700;font-size:14.5px">View on explorer ↗</a></sc-if>
+              <sc-if value="{{ txHash }}" hint-placeholder-val="{{ false }}"><a href="https://stablescan.xyz/tx/{{ txHash }}" target="_blank" rel="noopener noreferrer" style="flex:1;height:48px;display:grid;place-items:center;border:1px solid rgba(57,245,166,.28);border-radius:13px;color:#EAF4EF;font-weight:700;font-size:14.5px">View on explorer ↗</a></sc-if>
             </div>
           </div>
           </sc-if>
@@ -1054,7 +1060,7 @@
             <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:rgba(255,59,71,.12);border:1px solid rgba(255,59,71,.4);display:grid;place-items:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FF6B78" stroke-width="2.6"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
             <div style="font-weight:700;font-size:18px">Transaction failed</div>
             <div style="font-size:13.5px;color:#FF8A93;margin-top:6px">{{ txErr }}</div>
-            <sc-if value="{{ txHash }}" hint-placeholder-val="{{ false }}"><a href="https://explorer.stable.xyz/tx/{{ txHash }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">{{ txHashShort }} · View on explorer ↗</a></sc-if>
+            <sc-if value="{{ txHash }}" hint-placeholder-val="{{ false }}"><a href="https://stablescan.xyz/tx/{{ txHash }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">{{ txHashShort }} · View on explorer ↗</a></sc-if>
             <div style="display:flex;gap:10px;margin-top:22px">
               <button onclick="{{ closeModal }}" class="fs-ghost" style="flex:1;height:48px;background:transparent;border:1px solid rgba(57,245,166,.28);border-radius:13px;color:#EAF4EF;font-weight:700;font-size:14.5px;cursor:pointer">Close</button>
               <button onclick="{{ txConfirm }}" class="fs-primary" style="flex:1;height:48px;background:#39F5A6;color:#04120c;border:none;border-radius:13px;font-weight:800;font-size:14.5px;cursor:pointer;transition:.15s">Try again</button>
@@ -1162,11 +1168,11 @@ class Component extends DCLogic {
       watch:[], settings:{offers:true,sales:true,drops:false,mints:true},
       addr:null, chainId:null, balance:null, wrongNetwork:false, connecting:null, walletErr:null,
       ownedTokens:null, ownedLoading:false, editProfile:false, profile:{name:'',bio:'',x:''},
-      activityEvents:null,
+      activityEvents:null, sheetEvents:null, volume:null,
       toast:null
     };
     this.CHAIN_ID_HEX='0x3dc'; // 988
-    this.CHAIN_PARAMS={ chainId:'0x3dc', chainName:'Stable Mainnet', nativeCurrency:{name:'USDT0',symbol:'USDT0',decimals:18}, rpcUrls:['https://rpc.stable.xyz'], blockExplorerUrls:['https://explorer.stable.xyz'] };
+    this.CHAIN_PARAMS={ chainId:'0x3dc', chainName:'Stable Mainnet', nativeCurrency:{name:'USDT0',symbol:'USDT0',decimals:18}, rpcUrls:['https://rpc.stable.xyz'], blockExplorerUrls:['https://stablescan.xyz'] };
     this.NFT='0x26d17f15F467e5BAD9CB816235d856b317D45007';
     this.MKT='0x4c88b742D501D69C86c9CfF92bBbd81BE3AF0B2e';
     this.USDT='0x779ded0c9e1022225f8e0630b35a9b54be713736';
@@ -1175,14 +1181,62 @@ class Component extends DCLogic {
     this.SEL={supply:'0x18160ddd',max:'0x32cb6b0c',price:'0x6817c76c',menabled:'0xd1239730',maxtx:'0xde7fcb1d',owner:'0x6352211e',listings:'0xad4d2448',getListing:'0x88700d1c',fee:'0x465de68b',decimals:'0x313ce567',
       mint:'0xa0712d68',setApprovalForAll:'0xa22cb465',isApprovedForAll:'0xe985e9c5',buyNFT:'0xa82ba76f',listNFT:'0xad05f1b4',makeOffer:'0x730ed93b',acceptOffer:'0x3bbb2806',cancelOffer:'0x058a56ac',cancelListing:'0xb2ddee06',approve:'0x095ea7b3',allowance:'0xdd62ed3e',updatePrice:'0xe57d6fb7'};
     this.TRANSFER_TOPIC='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+    this.SB=(typeof window!=='undefined'&&window.FEVO_SUPABASE)||{url:'',anonKey:'',table:'marketplace_events'};
+    this.EXPLORER='https://stablescan.xyz';
     this.dec=6;
   }
   componentDidMount(){
     fetch('metadata/fevostable.tokens.json').then(r=>r.json()).then(m=>this.setState({meta:m})).catch(()=>{});
     this.loadChain();
     this.loadActivity();
+    this.initSupabase();
   }
-  componentWillUnmount(){ if(this._tt)clearTimeout(this._tt); }
+  componentWillUnmount(){ if(this._tt)clearTimeout(this._tt); if(this._sbChannel&&this._sb){ this._sb.removeChannel(this._sbChannel); } }
+
+  // ---- Supabase realtime event mirror (blockchain stays source of truth) ----
+  initSupabase(){
+    try{
+      if(!this.SB.url||!this.SB.anonKey||!(window.supabase&&window.supabase.createClient)){ this.setState({sheetEvents:[]}); return; }
+      this._sb=window.supabase.createClient(this.SB.url,this.SB.anonKey,{realtime:{params:{eventsPerSecond:10}}});
+      this.loadSupabase();
+      this._sbChannel=this._sb.channel('marketplace_events')
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:this.SB.table},(payload)=>{
+          this.setState(s=>({sheetEvents:[this.rowToEv(payload.new),...(s.sheetEvents||[])]})); // realtime append, no reload
+        })
+        .subscribe();
+    }catch(e){ this.setState({sheetEvents:[]}); }
+  }
+  rowToEv(r){ return {EventType:r.event_type,TokenId:r.token_id,WalletFrom:r.wallet_from,WalletTo:r.wallet_to,Seller:r.seller,Buyer:r.buyer,OfferMaker:r.offer_maker,Price:r.price,TxHash:r.transaction_hash,Timestamp:r.created_at?new Date(r.created_at).getTime():Date.now()}; }
+  async loadSupabase(){
+    if(!this._sb) return;
+    try{
+      const {data,error}=await this._sb.from(this.SB.table).select('*').order('created_at',{ascending:false}).limit(500);
+      if(error){ if(error.code!=='PGRST205'&&error.code!=='42P01') this.showToast('Supabase read failed: '+error.message); this.setState({sheetEvents:[]}); return; }
+      this.setState({sheetEvents:(data||[]).map(r=>this.rowToEv(r)), volume:this.computeVolume(data||[])});
+    }catch(e){ this.setState({sheetEvents:[]}); }
+  }
+  computeVolume(rows){ const now=Date.now(),DAY=86400000,a={h24:0,d7:0,d30:0,all:0};
+    (rows||[]).forEach(r=>{ if(r.event_type!=='Sale')return; const p=Number(r.price)||0; if(!p)return; a.all+=p;
+      const age=now-(r.created_at?new Date(r.created_at).getTime():0);
+      if(age<=DAY)a.h24+=p; if(age<=7*DAY)a.d7+=p; if(age<=30*DAY)a.d30+=p; }); return a; }
+  async postEvent(ev){
+    if(!this._sb||!ev||!ev.txHash) return;
+    const row={ block_number: ev.blockNumber||null, transaction_hash: ev.txHash, log_index: ev.logIndex||0,
+      event_type: ev.eventType, token_id: (ev.tokenId!=null&&ev.tokenId!=='')?String(ev.tokenId):null,
+      collection:'FevoStable Genesis', nft_contract:this.NFT, marketplace_contract:this.MKT,
+      seller: ev.seller||null, buyer: ev.buyer||null, offer_maker: ev.offerMaker||null,
+      wallet_from: ev.walletFrom||null, wallet_to: ev.walletTo||null,
+      price: ev.price!=null?ev.price:null, currency:'USDT0', status:'Confirmed', network:'Stable Mainnet',
+      image_url: (ev.tokenId!=null&&ev.tokenId!=='')?(this.IMG+ev.tokenId+'.jpg'):null,
+      explorer_url:'https://stablescan.xyz/tx/'+ev.txHash };
+    try{
+      const {error}=await this._sb.from(this.SB.table).insert(row);
+      if(error&&error.code!=='23505'){ this.showToast('Supabase sync failed: '+error.message); } // 23505 = duplicate (fine)
+      else { this.showToast('Activity synced'); }
+    }catch(e){ this.showToast('Supabase sync failed: '+((e&&e.message)||'network error')); }
+    // realtime broadcast refreshes every visitor; refresh volume locally too
+    this.loadSupabase();
+  }
 
   async rpc(method,params){
     for(const url of this.RPCS){
@@ -1328,14 +1382,21 @@ class Component extends DCLogic {
     const listedTokens=(c.listedIds||[]).map(id=>this.getToken(id));
     const recentCards=listedTokens.slice(0,12).map(t=>({id:t.id,name:t.name,glow:t.glow,glow2:t.glow2,priceLabel:priceLabel(t.price),open:()=>this.openItem(t.id)}));
     const hasListings=(c.listedIds||[]).length>0;
-    const latestSales=[]; // real sale events — wired to marketplace logs in production
+    const latestSales=(st.sheetEvents||[]).filter(r=>r.EventType==='Sale').slice(0,10).map(r=>{
+      const id=(r.TokenId===''||r.TokenId==null)?null:Number(r.TokenId);
+      const g=(m&&id!=null&&m.tokens[id])?m.tokens[id]:{g:'#39F5A6',g2:'#2CE0E0'};
+      return {id,name:id!=null?('FevoStable #'+id):'—',glow:g.g,glow2:g.g2,price:r.Price?this.fmtP(+r.Price)+' USDT0':'—',time:'',open:()=>{ if(id!=null) this.openItem(id); }};
+    });
 
     const orNa=(v,suffix)=> v==null?'—':(this.fmt(v)+(suffix||''));
+    const vol=st.volume||{};
+    const volLabel=(v)=> (v==null)?'—':(this.fmtP(v)+' USDT0');
+    const topOffer=(st.sheetEvents||[]).filter(r=>r.EventType==='Offer').reduce((a,r)=>Math.max(a,+r.Price||0),0);
     const collectionStats=[
       {label:'FLOOR',value:floor==null?'—':this.fmtP(floor)+' USDT0'},
-      {label:'TOP OFFER',value:'—'},
-      {label:'24H VOL',value:'—'},
-      {label:'TOTAL VOL',value:'—'},
+      {label:'TOP OFFER',value:topOffer?this.fmtP(topOffer)+' USDT0':'—'},
+      {label:'24H VOL',value:vol.h24!=null?volLabel(vol.h24):'—'},
+      {label:'TOTAL VOL',value:vol.all!=null?volLabel(vol.all):'—'},
       {label:'OWNERS',value:'—'},
       {label:'ITEMS',value:orNa(supply)},
       {label:'FEE',value:feePct==null?'—':feePct+'%'}
@@ -1362,17 +1423,36 @@ class Component extends DCLogic {
           toggle:()=>this.toggleTrait(fc.type,v.value)}))};
     });
 
-    const evs=st.activityEvents||[];
-    const explorerTx=(h)=>'https://explorer.stable.xyz/tx/'+h;
-    const mapEv=(e)=>({event:e.event,evColor:e.evColor,evIcon:e.evIcon,name:e.tokenId!=null?('FevoStable #'+e.tokenId):'—',
-      glow:(m&&e.tokenId!=null&&m.tokens[e.tokenId])?m.tokens[e.tokenId].g:'#39F5A6',
-      price:'—', parties:e.from+' → '+e.to, time:e.hash?this.short(e.hash):'—',
-      open:()=>{ if(e.hash) window.open(explorerTx(e.hash),'_blank','noopener'); }});
-    const activity=evs.map(mapEv);
-    const actMap={All:null,Sales:null,Listings:null,Offers:null,Transfers:'Transfer',Mints:'Mint'};
-    const globalActivity=evs.filter(e=>!actMap[st.actFilter]||e.event===actMap[st.actFilter]).map(mapEv);
-    const collOffers=[];
-    const actFilters=['All','Sales','Listings','Offers','Transfers','Mints'].map(k=>({label:k,color:st.actFilter===k?'#04120c':'#C7D8D0',bg:st.actFilter===k?'#39F5A6':'transparent',select:()=>this.setState({actFilter:k})}));
+    const explorerTx=(h)=>'https://stablescan.xyz/tx/'+h;
+    const explorerAddr=(a)=>'https://stablescan.xyz/address/'+a;
+    // Event badge colors: Sale green, Mint blue, Listing orange, Transfer purple, Offer yellow,
+    // Offer Accepted red, Offer Cancelled gray, Price Updated cyan, Cancel Listing dark gray.
+    const evStyle={Mint:['#5AD1FF','✦'],Listing:['#FF9F45','⊕'],'Price Updated':['#2CE0E0','↺'],'Cancel Listing':['#6B7C74','⊘'],Sale:['#39F5A6','◆'],Offer:['#FFC24B','⤴'],'Offer Accepted':['#FF6B78','✓'],'Offer Cancelled':['#8FA69D','⊘'],Transfer:['#B478FF','⇄']};
+    const priceColorFor=(ev)=>({Sale:'#39F5A6','Offer Accepted':'#FF6B78',Listing:'#FF9F45','Price Updated':'#5AD1FF'}[ev]||'#EAF4EF');
+    // Sheet mirror is preferred; falls back to on-chain Transfer scan when no sheet configured.
+    const sheet=st.sheetEvents;
+    let baseEvents;
+    if(sheet&&sheet.length){
+      baseEvents=sheet.map(r=>({event:r.EventType,tokenId:(r.TokenId===''||r.TokenId==null)?null:Number(r.TokenId),
+        fromA:String(r.WalletFrom||r.Seller||r.OfferMaker||''),toA:String(r.WalletTo||r.Buyer||''),
+        priceNum:+r.Price||null, price:r.Price?this.fmtP(+r.Price)+' USDT0':'—', hash:r.TxHash, ts:Number(r.Timestamp)||0}));
+    } else {
+      baseEvents=(st.activityEvents||[]).map(e=>({event:e.event,tokenId:e.tokenId,fromA:'',toA:'',price:'—',hash:e.hash,ts:0}));
+    }
+    const mapEv=(e)=>{ const s=evStyle[e.event]||['#8FA69D','•']; return {event:e.event,evColor:s[0],evIcon:s[1],
+      name:e.tokenId!=null?('FevoStable #'+e.tokenId):'—', glow:(m&&e.tokenId!=null&&m.tokens[e.tokenId])?m.tokens[e.tokenId].g:'#39F5A6',
+      price:e.price, priceColor:priceColorFor(e.event), qty:'1',
+      fromLabel:e.fromA?this.short(e.fromA):'—', toLabel:e.toA?this.short(e.toA):'—',
+      openFrom:()=>{ if(e.fromA) window.open(explorerAddr(e.fromA),'_blank','noopener'); },
+      openTo:()=>{ if(e.toA) window.open(explorerAddr(e.toA),'_blank','noopener'); },
+      parties:(e.fromA?this.short(e.fromA):'—')+' → '+(e.toA?this.short(e.toA):'—'), time:e.hash?this.short(e.hash):'—',
+      open:()=>{ if(e.hash) window.open(explorerTx(e.hash),'_blank','noopener'); }}; };
+    const activity=baseEvents.map(mapEv);
+    const actMap={All:null,Sale:'Sale',Mint:'Mint',Transfer:'Transfer',Listing:'Listing',Offer:'Offer','Offer Accepted':'Offer Accepted','Offer Cancelled':'Offer Cancelled','Price Updated':'Price Updated','Cancel Listing':'Cancel Listing'};
+    const globalActivity=baseEvents.filter(e=>!actMap[st.actFilter]||e.event===actMap[st.actFilter]).map(mapEv);
+    // Offers + recent sales derived from the same mirror
+    const collOffers=baseEvents.filter(e=>e.event==='Offer').slice(0,8).map(e=>({price:e.price,diff:'—',diffColor:'#8FA69D',exp:'—',from:e.fromA?this.short(e.fromA):'—'}));
+    const actFilters=['All','Sale','Mint','Transfer','Listing','Offer','Offer Accepted','Offer Cancelled','Price Updated','Cancel Listing'].map(k=>({label:k,color:st.actFilter===k?'#04120c':'#C7D8D0',bg:st.actFilter===k?'#39F5A6':'transparent',select:()=>this.setState({actFilter:k})}));
 
     const tok=this.getToken(st.itemId);
     const itemFacetLookup={}; rawFacets.forEach(fc=>fc.values.forEach(v=>itemFacetLookup[fc.type+'|'+v.value]=v.pct));
@@ -1421,7 +1501,7 @@ class Component extends DCLogic {
       rarityColor:t.rank<=40?'#FFC24B':(t.rank<=250?'#B478FF':(t.rank<=900?'#5AD1FF':'#8FA69D')),
       open:()=>this.openItem(t.id)}; });
     const timeRanges=['1h','6h','24h','7d','30d','All'].map(r=>({label:r,color:st.rankRange===r?'#04120c':'#8FA69D',bg:st.rankRange===r?'#39F5A6':'transparent',select:()=>this.setState({rankRange:r})}));
-    const collSummary={floor:floor==null?'—':this.fmtP(floor)+' USDT0',vol:'—',owners:'—',supply:orNa(supply)};
+    const collSummary={floor:floor==null?'—':this.fmtP(floor)+' USDT0',vol:vol.h24!=null?volLabel(vol.h24):'—',owners:'—',supply:orNa(supply)};
 
     const mkSimple=(it)=>({id:it.id,name:it.name,glow:it.glow,glow2:it.glow2,priceLabel:priceLabel(it.price),click:()=>this.openItem(it.id)});
     const favCards=st.favs.map(id=>this.getToken(id)).map(mkSimple);
@@ -1430,7 +1510,9 @@ class Component extends DCLogic {
 
     const mpStats=[
       {label:'FLOOR PRICE',value:floor==null?'—':this.fmtP(floor)+' USDT0'},
-      {label:'24H VOLUME',value:'—'},{label:'TOTAL VOLUME',value:'—'},{label:'OWNERS',value:'—'},
+      {label:'24H VOLUME',value:vol.h24!=null?volLabel(vol.h24):'—'},
+      {label:'7D VOLUME',value:vol.d7!=null?volLabel(vol.d7):'—'},
+      {label:'TOTAL VOLUME',value:vol.all!=null?volLabel(vol.all):'—'},
       {label:'LISTED',value:orNa(listedCount)},{label:'ITEMS',value:orNa(supply)}
     ];
     const setDefs=[['offers','Offer activity on my items'],['sales','Sales & purchases'],['drops','Price drops on my watchlist'],['mints','Mint phase reminders']];
@@ -1530,7 +1612,7 @@ class Component extends DCLogic {
       openCreate:()=>{ if(this.needWallet())return; this.openList(1); },
       openWallet:()=>this.setState({modal:{type:'wallet'}}), openSearch:()=>this.setState({searchOpen:true}),
       isHome:st.route==='home', isCollection:st.route==='collection', isItem:st.route==='item', isMint:st.route==='mint', isProfile:st.route==='profile',
-      stats:{floorLabel:floor==null?'—':this.fmtP(floor)+' USDT0',vol24Label:'—',ownersLabel:'—'},
+      stats:{floorLabel:floor==null?'—':this.fmtP(floor)+' USDT0',vol24Label:vol.h24!=null?volLabel(vol.h24):'—',ownersLabel:'—'},
       categories, notable, recentCards, hasListings, latestSales,
       hasNotable:notable.length>0, hasRecent:recentCards.length>0, hasSales:latestSales.length>0, hasRankItems:rankRows.length>0,
       collectionStats, collectionTabs, traitFacets,
@@ -1690,17 +1772,20 @@ class Component extends DCLogic {
     for(let i=0;i<80;i++){
       await new Promise(r=>setTimeout(r,3000));
       let rec=null; try{ rec=await this.rpc('eth_getTransactionReceipt',[hash]); }catch(e){}
-      if(rec){ return {ok:(rec.status==='0x1'),hash,reason:rec.status==='0x1'?null:'reverted'}; }
+      if(rec){ return {ok:(rec.status==='0x1'),hash,reason:rec.status==='0x1'?null:'reverted',blockNumber: rec.blockNumber?Number(BigInt(rec.blockNumber)):'', receipt:rec}; }
     }
     return {ok:false,hash,reason:'timeout'};
   }
-  async runSteps(steps){
+  async runSteps(steps,evList){
     if(!this._provider){ this.setState({txStep:'failed',txErr:'No connected wallet.'}); return; }
     try{
+      let lastHash=null;
       for(const s of steps){
         this.setState({txStep:'awaiting',txAwaitLabel:s.label,txErr:null});
         const res=await this.sendAndWait(s.to,s.data,s.value);
         if(!res.ok){ this.setState({txStep:'failed',txHash:res.hash,txErr: res.reason==='reverted'?'Transaction reverted on-chain.':'Transaction not confirmed (timed out).'}); return; }
+        lastHash=res.hash;
+        if(s.event){ await this.postEvent(Object.assign({txHash:res.hash,blockNumber:res.blockNumber,walletFrom:s.event.walletFrom||this.state.addr},s.event)); } // store only after confirmation
       }
       this.setState({txStep:'success'});
       this.refreshAll();
@@ -1749,32 +1834,32 @@ class Component extends DCLogic {
         const total=price + price*BigInt(feeBps)/10000n + price*500n/10000n; // price + fee + 5% royalty
         const allw=await this.readAllowance(owner);
         if(allw<total) steps.push({label:'Approve USDT0',to:this.USDT,data:this.SEL.approve+this.encAddr(this.MKT)+this.encUint(total)});
-        steps.push({label:'Buy NFT',to:this.MKT,data:this.SEL.buyNFT+this.encAddr(this.NFT)+this.encUint(md.id)});
+        steps.push({label:'Buy NFT',to:this.MKT,data:this.SEL.buyNFT+this.encAddr(this.NFT)+this.encUint(md.id),event:{eventType:'Sale',tokenId:md.id,buyer:owner,seller:t.seller||'',price:t.price||0,walletTo:owner}});
       } else if(md.type==='cart'){
         const toks=this.state.cart.map(id=>this.getToken(id)); const sum=toks.reduce((a,x)=>a+this.toBase(x.price||0),0n);
         const total=sum + sum*BigInt(feeBps)/10000n + sum*500n/10000n;
         const allw=await this.readAllowance(owner);
         if(allw<total) steps.push({label:'Approve USDT0',to:this.USDT,data:this.SEL.approve+this.encAddr(this.MKT)+this.encUint(total)});
-        toks.forEach(t=>steps.push({label:'Buy '+t.name,to:this.MKT,data:this.SEL.buyNFT+this.encAddr(this.NFT)+this.encUint(t.id)}));
+        toks.forEach(t=>steps.push({label:'Buy '+t.name,to:this.MKT,data:this.SEL.buyNFT+this.encAddr(this.NFT)+this.encUint(t.id),event:{eventType:'Sale',tokenId:t.id,buyer:owner,seller:t.seller||'',price:t.price||0,walletTo:owner}}));
       } else if(md.type==='offer'){
         const amt=this.toBase(this.state.offerAmount);
         const allw=await this.readAllowance(owner);
         if(allw<amt) steps.push({label:'Approve USDT0',to:this.USDT,data:this.SEL.approve+this.encAddr(this.MKT)+this.encUint(amt)});
-        steps.push({label:'Make offer',to:this.MKT,data:this.SEL.makeOffer+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(amt)+this.encUint(this.durationSecs())});
+        steps.push({label:'Make offer',to:this.MKT,data:this.SEL.makeOffer+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(amt)+this.encUint(this.durationSecs()),event:{eventType:'Offer',tokenId:md.id,offerMaker:owner,price:+this.state.offerAmount}});
       } else if(md.type==='list'){
         const price=this.toBase(this.state.listPrice);
         const approved=await this.readApprovedForAll(owner);
         if(!approved) steps.push({label:'Approve collection',to:this.NFT,data:this.SEL.setApprovalForAll+this.encAddr(this.MKT)+this.encUint(1)});
-        steps.push({label:'List NFT',to:this.MKT,data:this.SEL.listNFT+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(price)});
+        steps.push({label:'List NFT',to:this.MKT,data:this.SEL.listNFT+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(price),event:{eventType:'Listing',tokenId:md.id,seller:owner,walletFrom:owner,price:+this.state.listPrice}});
       } else if(md.type==='editprice'){
         const price=this.toBase(this.state.listPrice);
-        steps.push({label:'Update price',to:this.MKT,data:this.SEL.updatePrice+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(price)});
+        steps.push({label:'Update price',to:this.MKT,data:this.SEL.updatePrice+this.encAddr(this.NFT)+this.encUint(md.id)+this.encUint(price),event:{eventType:'Price Updated',tokenId:md.id,seller:owner,price:+this.state.listPrice}});
       } else if(md.type==='cancel'){
-        steps.push({label:'Cancel listing',to:this.MKT,data:this.SEL.cancelListing+this.encAddr(this.NFT)+this.encUint(md.id)});
+        steps.push({label:'Cancel listing',to:this.MKT,data:this.SEL.cancelListing+this.encAddr(this.NFT)+this.encUint(md.id),event:{eventType:'Cancel Listing',tokenId:md.id,seller:owner,walletFrom:owner}});
       } else if(md.type==='mint'){
         const qty=this.state.mintQty; const mp=c.mintPrice;
         if(mp&&mp>0){ const cost=this.toBase(mp*qty); const allw=await this.readAllowance(owner); if(allw<cost) steps.push({label:'Approve USDT0',to:this.USDT,data:this.SEL.approve+this.encAddr(this.NFT)+this.encUint(cost)}); }
-        steps.push({label:'Mint',to:this.NFT,data:this.SEL.mint+this.encUint(qty)});
+        steps.push({label:'Mint',to:this.NFT,data:this.SEL.mint+this.encUint(qty),event:{eventType:'Mint',tokenId:'',buyer:owner,walletTo:owner,walletFrom:owner,price:mp?mp*qty:0}});
       }
       if(!steps.length){ this.setState({txStep:'failed',txErr:'Nothing to submit.'}); return; }
       await this.runSteps(steps);
